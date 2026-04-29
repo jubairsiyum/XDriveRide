@@ -1,5 +1,7 @@
 # 🚗 HexaRide/Drivemond - Complete Ride Sharing Platform
 
+## Ayooooooooooo Stalkers!! It's not mistakenly public. 
+
 > A comprehensive, production-ready ride-sharing application with Laravel backend and Flutter mobile applications for drivers and users.
 
 ![Version](https://img.shields.io/badge/version-3.1-blue.svg)
