@@ -14,7 +14,7 @@ return new class extends Migration
         if (!Schema::hasTable('subscriptions')) {
             Schema::create('subscriptions', function (Blueprint $table) {
                 $table->bigIncrements('id');
-                $table->unsignedBigInteger('user_id');
+                $table->uuid('user_id');
                 $table->unsignedBigInteger('plan_id');
                 $table->timestamp('started_at')->nullable();
                 $table->timestamp('expires_at')->nullable();
