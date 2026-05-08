@@ -4418,4 +4418,6 @@
   'Subscriptions' => 'Subscriptions',
   'All Subscriptions' => 'All Subscriptions',
   'Create a level first' => 'Create a level first',
+  'User credential does not match' => 'User credential does not match',
+  'Zone not found' => 'Zone not found',
 );
