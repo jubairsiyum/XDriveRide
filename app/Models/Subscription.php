@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Subscription extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasUuid;
 
     protected $fillable = [
         'user_id',
@@ -25,8 +26,9 @@ class Subscription extends Model
         'auto_renew' => 'boolean'
     ];
 
-    public $incrementing = true;
-    protected $keyType = 'int';
+    // UUID primary key (subscriptions.id is char(36) in DB)
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     public function user()
     {

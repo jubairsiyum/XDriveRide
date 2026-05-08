@@ -30,6 +30,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'admin'], f
                 Route::get('/show/{id}', 'show')->name('show');
                 Route::get('/edit/{id}', 'edit')->name('edit');
                 Route::put('/update/{id}', 'update')->name('update');
+
+                // Assign subscription plan directly to a driver user
+                Route::get('/assign-plan', 'assignPlanToDriverForm')->name('assign_plan_form');
+                Route::post('/assign-plan', 'assignPlanToDriver')->name('assign_plan');
             });
         });
     });

@@ -662,6 +662,12 @@
                                     {{ translate('All Subscriptions') }}
                                 </a>
                             </li>
+                            <li class="{{Request::is('admin/subscriptions/list/assign-plan') ? 'active open' : ''}}">
+                                <a href="{{ route('admin.subscriptions.subscriptions.assign_plan_form') }}">
+                                    <i class="bi bi-dash-lg"></i>
+                                    {{ translate('Assign Plan to Driver') }}
+                                </a>
+                            </li>
                         </ul>
                         <!-- End Sub Menu -->
                     </li>

@@ -12,9 +12,14 @@
                     <h1 class="h3 mb-0">Driver Subscriptions</h1>
                     <p class="text-muted mt-1">View and manage all driver subscriptions</p>
                 </div>
-                <a href="{{ route('admin.subscriptions.dashboard') }}" class="btn btn-outline-primary">
-                    <i class="fas fa-chart-line"></i> Dashboard
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('admin.subscriptions.subscriptions.assign_plan_form') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Assign Plan
+                    </a>
+                    <a href="{{ route('admin.subscriptions.dashboard') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                </div>
             </div>
         </div>
     </div>

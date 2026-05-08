@@ -5,6 +5,7 @@ namespace Modules\SubscriptionManagement\Http\Controllers\Web\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,7 +57,7 @@ class UserSubscriptionController extends Controller
         return view('subscriptionmanagement::admin.subscriptions.index', compact('subscriptions', 'plans'));
     }
 
-    public function show(int $id): View
+    public function show(string $id): View
     {
         $this->authorize('subscription_view');
 
@@ -67,7 +68,7 @@ class UserSubscriptionController extends Controller
         return view('subscriptionmanagement::admin.subscriptions.show', compact('subscription'));
     }
 
-    public function edit(int $id): View
+    public function edit(string $id): View
     {
         $this->authorize('subscription_edit');
 
@@ -80,7 +81,7 @@ class UserSubscriptionController extends Controller
         return view('subscriptionmanagement::admin.subscriptions.edit', compact('subscription', 'plans'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, string $id): RedirectResponse
     {
         $this->authorize('subscription_edit');
 
@@ -124,5 +125,60 @@ class UserSubscriptionController extends Controller
         return redirect()
             ->route('admin.subscriptions.subscriptions.show', $subscription->id)
             ->with('success', 'Subscription updated successfully.');
+    }
+
+    public function assignPlanToDriverForm(): View
+    {
+        $this->authorize('subscription_add');
+
+        $drivers = User::query()
+            ->where('user_type', 'driver')
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name', 'email', 'phone']);
+
+        $plans = SubscriptionPlan::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('subscriptionmanagement::admin.subscriptions.assign-plan', compact('drivers', 'plans'));
+    }
+
+    public function assignPlanToDriver(Request $request): RedirectResponse
+    {
+        $this->authorize('subscription_add');
+
+        $validated = $request->validate([
+            'driver_id' => 'required|exists:users,id',
+            'plan_id' => 'required|integer|exists:subscription_plans,id',
+        ]);
+
+        $driver = User::query()
+            ->where('user_type', 'driver')
+            ->findOrFail($validated['driver_id']);
+
+        $plan = SubscriptionPlan::query()
+            ->where('is_active', true)
+            ->findOrFail($validated['plan_id']);
+
+        // Cancel any existing active subscription (for this driver)
+        $driver->subscriptions()
+            ->where('status', 'active')
+            ->update([
+                'status' => 'cancelled',
+                'auto_renew' => false,
+            ]);
+
+        $subscription = $driver->subscriptions()->create([
+            'plan_id' => $plan->id,
+            'started_at' => now(),
+            'expires_at' => Carbon::now()->addDays((int) $plan->duration_days),
+            'auto_renew' => false,
+            'status' => 'active',
+        ]);
+
+        return redirect()
+            ->route('admin.subscriptions.subscriptions.show', $subscription->id)
+            ->with('success', 'Subscription plan assigned to driver successfully.');
     }
 }
