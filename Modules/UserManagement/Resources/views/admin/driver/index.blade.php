@@ -151,7 +151,7 @@
                                                                  style="--size: 20px">
                                                             <span class="d-flex align-items-center gap-1">
                                                                 <span class="text-nowrap">{{ $driver?->first_name }} {{ $driver?->last_name }}</span>
-                                                                @if($driver->driverDetails->is_verified)
+                                                                @if($driver?->driverDetails?->is_verified)
                                                                     <span class="fs-14 lh-1" data-bs-toggle="tooltip" title="{{ translate('Verified') }}">
                                                                         <i class="bi bi-patch-check-fill text-success"></i>
                                                                     </span>
@@ -160,7 +160,7 @@
                                                                         <i class="bi bi-patch-exclamation-fill text-danger"></i>
                                                                     </span>
                                                                 @endif
-                                                                @if($driver->driverDetails->is_suspended)
+                                                                @if($driver?->driverDetails?->is_suspended)
                                                                     <img width="14" src="{{ dynamicAsset('public/assets/admin-module/img/svg/on-hold.svg') }}" alt="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="{{ translate('on_hold') }}">
                                                                 @endif
                                                             </span>
@@ -177,9 +177,9 @@
 
                                                     <td class="profile-status">{{ $driver->completion_percent }}%</td>
                                                     <td class="level">{{ $driver->level?->name }}</td>
-                                                    <td class="total-trip">{{ $driver->driverTrips->count() }}</td>
+                                                    <td class="total-trip">{{ $driver?->driverTrips?->count() ?? 0 }}</td>
                                                     <td>
-                                                        {{ set_currency_symbol($driver->userAccount->received_balance + $driver->userAccount->total_withdrawn) }}
+                                                        {{ set_currency_symbol( ($driver?->userAccount?->received_balance ?? 0) + ($driver?->userAccount?->total_withdrawn ?? 0) ) }}
                                                     </td>
                                                     @can('user_edit')
                                                         <td class="status">
@@ -216,7 +216,7 @@
                                                                 </a>
                                                             @endcan
                                                             @can('user_delete')
-                                                                    @if(count($driver->getDriverLastTrip())!=0|| $driver?->userAccount->payable_balance>0 || $driver?->userAccount->pending_balance>0 || $driver?->userAccount->receivable_balance>0)
+                                                                    @if(count($driver->getDriverLastTrip())!=0|| ($driver?->userAccount?->payable_balance ?? 0)>0 || ($driver?->userAccount?->pending_balance ?? 0)>0 || ($driver?->userAccount?->receivable_balance ?? 0)>0)
                                                                             <button data-id="delete-{{ $driver->id }}"
                                                                                     data-message="{{ translate("Sorry you can't delete this driver, because there are ongoing rides or payment due this driver.?") }}"
                                                                                     type="button"
