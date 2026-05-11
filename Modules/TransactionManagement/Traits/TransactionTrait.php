@@ -22,8 +22,9 @@ trait TransactionTrait
         $adminUserId = User::where('user_type', ADMIN_USER_TYPES[0])->first()->id;
 
         DB::beginTransaction();
-        $adminReceived = $trip->fee->admin_commission;//30
-        $tripBalanceAfterRemoveCommission = $trip->paid_fare - $trip->fee->admin_commission; //70
+        // No platform charges: driver receives full ride/parcel total
+        $adminReceived = 0;
+        $tripBalanceAfterRemoveCommission = $trip->paid_fare;
         $riderEarning = $tripBalanceAfterRemoveCommission;
 
         //Admin account update (payable and wallet balance +)
@@ -99,11 +100,12 @@ trait TransactionTrait
     {
         $adminUserId = User::where('user_type', ADMIN_USER_TYPES[0])->first()->id;
         DB::beginTransaction();
-        $adminReceived = $trip->fee->admin_commission;//30
+        // No platform charges: driver receives full ride/parcel total
+        $adminReceived = 0;
         if ($returnFee) {
-            $tripBalanceAfterRemoveCommission = ($trip->paid_fare - $trip->return_fee) - $trip->fee->admin_commission; //70
+            $tripBalanceAfterRemoveCommission = ($trip->paid_fare - $trip->return_fee);
         } else {
-            $tripBalanceAfterRemoveCommission = $trip->paid_fare - $trip->fee->admin_commission; //70
+            $tripBalanceAfterRemoveCommission = $trip->paid_fare;
         }
 
 
@@ -248,7 +250,8 @@ trait TransactionTrait
     {
         $adminUserId = User::where('user_type', ADMIN_USER_TYPES[0])->first()->id;
         DB::beginTransaction();
-        $tripBalanceAfterRemoveCommission = $trip->paid_fare - $trip->fee->admin_commission; //70
+        // No platform charges: reverse full ride/parcel total from driver balances
+        $tripBalanceAfterRemoveCommission = $trip->paid_fare;
 
         //Rider account update for reverse
         $riderAccount = UserAccount::where('user_id', $trip->driver->id)->first();
@@ -339,7 +342,8 @@ trait TransactionTrait
     {
         $adminUserId = User::where('user_type', ADMIN_USER_TYPES[0])->first()->id;
         DB::beginTransaction();
-        $tripBalanceAfterRemoveCommission = $trip->paid_fare - $trip->fee->admin_commission; //70
+        // No platform charges: reverse full ride/parcel total from driver balances
+        $tripBalanceAfterRemoveCommission = $trip->paid_fare;
 
         //customer account credit parcel cancel driver return
         $customerAccount = UserAccount::where('user_id', $trip->customer->id)->first();
@@ -416,7 +420,8 @@ trait TransactionTrait
         $adminUserId = User::where('user_type', ADMIN_USER_TYPES[0])->first()->id;
 
         DB::beginTransaction();
-        $tripBalanceAfterRemoveCommission = $trip->paid_fare - $trip->fee->admin_commission; //70
+        // No platform charges: reverse full ride/parcel total from driver balances
+        $tripBalanceAfterRemoveCommission = $trip->paid_fare;
 
         //customer account credit parcel cancel driver return
         $customerAccount = UserAccount::where('user_id', $trip->customer->id)->first();
@@ -494,8 +499,9 @@ trait TransactionTrait
         $adminUserId = User::where('user_type', ADMIN_USER_TYPES[0])->first()->id;
 
         DB::beginTransaction();
-        $adminReceived = $trip->fee->admin_commission;//30
-        $tripBalanceAfterRemoveCommission = $trip->paid_fare - $trip->fee->admin_commission; //70
+        // No platform charges: driver receives full ride/parcel total
+        $adminReceived = 0;
+        $tripBalanceAfterRemoveCommission = $trip->paid_fare;
         $riderEarning = $tripBalanceAfterRemoveCommission;
 
         //customer account debit

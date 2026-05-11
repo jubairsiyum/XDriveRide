@@ -101,23 +101,26 @@ class SubscriptionController extends Controller
     {
         try {
             $validated = $request->validate([
-                'plan_id' => 'required|uuid|exists:subscription_plans,id',
+                'plan_id' => 'required|exists:subscription_plans,id',
                 'payment_method' => 'required|string'
             ]);
 
             $user = Auth::user();
             $plan = SubscriptionPlan::find($validated['plan_id']);
 
-            // Cancel any existing active subscription
+            // Cancel any existing active subscription (for this driver)
             $user->subscriptions()
                 ->where('status', 'active')
-                ->update(['status' => 'cancelled']);
+                ->update([
+                    'status' => 'cancelled',
+                    'auto_renew' => false,
+                ]);
 
             // Create new subscription
             $subscription = $user->subscriptions()->create([
                 'plan_id' => $plan->id,
                 'started_at' => now(),
-                'expires_at' => now()->addDays($plan->duration_days),
+                'expires_at' => now()->addDays((int) $plan->duration_days),
                 'auto_renew' => false,
                 'status' => 'active'
             ]);
@@ -156,8 +159,11 @@ class SubscriptionController extends Controller
         try {
             $user = Auth::user();
 
+            // Mirror admin "extend/renew" logic: extend existing active subscription
             $currentSubscription = $user->subscriptions()
                 ->where('status', 'active')
+                ->where('expires_at', '>', now())
+                ->with('plan')
                 ->first();
 
             if (!$currentSubscription) {
@@ -169,20 +175,20 @@ class SubscriptionController extends Controller
 
             $plan = $currentSubscription->plan;
 
-            $newSubscription = $user->subscriptions()->create([
-                'plan_id' => $plan->id,
-                'started_at' => $currentSubscription->expires_at,
-                'expires_at' => $currentSubscription->expires_at->addDays($plan->duration_days),
-                'auto_renew' => false,
-                'status' => 'active'
-            ]);
+            $baseDate = $currentSubscription->expires_at && $currentSubscription->expires_at->greaterThan(now())
+                ? $currentSubscription->expires_at->copy()
+                : now();
 
-            $currentSubscription->update(['status' => 'expired']);
+            $currentSubscription->expires_at = $baseDate->addDays((int) $plan->duration_days);
+            $currentSubscription->status = 'active';
+            $currentSubscription->auto_renew = false;
+
+            $currentSubscription->save();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Subscription renewed successfully',
-                'data' => $newSubscription->load('plan')
+                'data' => $currentSubscription->fresh()->load('plan')
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -203,6 +209,7 @@ class SubscriptionController extends Controller
 
             $subscription = $user->subscriptions()
                 ->where('status', 'active')
+                ->where('expires_at', '>', now())
                 ->first();
 
             if (!$subscription) {
@@ -212,7 +219,11 @@ class SubscriptionController extends Controller
                 ], 404);
             }
 
-            $subscription->update(['status' => 'cancelled']);
+            // Mirror admin cancel: status=cancelled and auto_renew=false
+            $subscription->update([
+                'status' => 'cancelled',
+                'auto_renew' => false,
+            ]);
 
             return response()->json([
                 'success' => true,
